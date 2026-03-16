@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Chlorine Calc</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Chlorine Calc">
+
+<script>
+// Service Worker per uso offline
+if('serviceWorker' in navigator){
+  const sw = `
+    self.addEventListener('install', e => self.skipWaiting());
+    self.addEventListener('fetch', e => {
+      e.respondWith(caches.open('chlorine-v1').then(cache =>
+        cache.match(e.request).then(r => r || fetch(e.request).then(res => {
+          cache.put(e.request, res.clone()); return res;
+        }))
+      ));
+    });
+  `;
+  const blob = new Blob([sw], {type:'application/javascript'});
+  const url = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(url);
+}
+</script>
+
+<script>
+(function(){
+  var c = document.createElement('canvas');
+  c.width = 180; c.height = 180;
+  var ctx = c.getContext('2d');
+  var g = ctx.createLinearGradient(0,0,180,180);
+  g.addColorStop(0,'#1b3a6b');
+  g.addColorStop(1,'#2a5298');
+  ctx.fillStyle = g;
+  var r = 32;
+  ctx.beginPath();
+  ctx.moveTo(r,0); ctx.lineTo(180-r,0);
+  ctx.quadraticCurveTo(180,0,180,r);
+  ctx.lineTo(180,180-r);
+  ctx.quadraticCurveTo(180,180,180-r,180);
+  ctx.lineTo(r,180); ctx.quadraticCurveTo(0,180,0,180-r);
+  ctx.lineTo(0,r); ctx.quadraticCurveTo(0,0,r,0);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 9;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(120,36);
+  ctx.bezierCurveTo(120,36, 55,36, 46,62);
+  ctx.bezierCurveTo(37,88, 100,92, 100,118);
+  ctx.bezierCurveTo(100,144, 40,144, 40,144);
+  ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(108,28); ctx.lineTo(120,36); ctx.lineTo(112,48); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(52,152); ctx.lineTo(40,144); ctx.lineTo(48,132); ctx.stroke();
+  ctx.lineWidth = 7;
+  [[18,58],[18,90],[18,122]].forEach(function(p){
+    ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(42,p[1]); ctx.stroke();
+  });
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.font = 'bold 18px -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Chlorine Calc', 90, 168);
+  var link = document.createElement('link');
+  link.rel = 'apple-touch-icon';
+  link.href = c.toDataURL('image/png');
+  document.head.appendChild(link);
+})();
+</script>
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f0f6fb;
+    min-height: 100vh;
+    color: #1a2a3a;
+  }
+  header {
+    background: #fff;
+    padding: 20px 20px 16px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .header-text .name { font-size: 1.4rem; font-weight: 700; color: #1b3a6b; letter-spacing: -0.3px; }
+  .header-text .title { font-size: 0.82rem; color: #6b7c93; font-weight: 400; margin-top: 3px; }
+  .subtitle { margin-top: 8px; font-size: 0.72rem; color: #8fa3b8; letter-spacing: 0.8px; text-transform: uppercase; }
+
+  .container { max-width: 480px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .card { background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(27,58,107,0.07); }
+  .card-title { font-size: 0.7rem; font-weight: 700; color: #1b3a6b; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; gap: 7px; }
+  .card-title span { font-size: 1rem; }
+
+  label { display: block; font-size: 0.82rem; color: #4a5568; margin-bottom: 5px; font-weight: 500; }
+  .input-row { display: flex; gap: 8px; align-items: stretch; }
+  input[type=number] {
+    flex: 1; padding: 13px 14px; border: 1.5px solid #d0dce8; border-radius: 10px;
+    font-size: 1.05rem; color: #1a2a3a; background: #f8fbff; outline: none;
+    transition: border 0.2s; -webkit-appearance: none;
+  }
+  input[type=number]:focus { border-color: #1b3a6b; background: #fff; }
+  .unit-select {
+    padding: 13px 10px; border: 1.5px solid #d0dce8; border-radius: 10px;
+    font-size: 0.9rem; color: #1b3a6b; background: #eef4fb; font-weight: 600;
+    outline: none; cursor: pointer; min-width: 70px;
+  }
+
+  .ntu-hint { font-size: 0.72rem; color: #8fa3b8; margin-top: 6px; }
+  .ntu-scale { display: flex; margin-top: 8px; border-radius: 8px; overflow: hidden; }
+  .ntu-scale div { flex: 1; padding: 5px 3px; text-align: center; font-size: 0.62rem; font-weight: 600; color: #fff; }
+  .ntu-c1{background:#4caf8a} .ntu-c2{background:#8bc34a} .ntu-c3{background:#ffc107;color:#5a3e00} .ntu-c4{background:#ff7043} .ntu-c5{background:#c62828}
+
+  .chlorine-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .chlorine-opt { border: 2px solid #d0dce8; border-radius: 12px; padding: 12px 10px; cursor: pointer; transition: all 0.18s; text-align: center; background: #f8fbff; }
+  .chlorine-opt.selected { border-color: #1b3a6b; background: #eef4fb; }
+  .chlorine-opt .opt-icon { font-size: 1.5rem; margin-bottom: 4px; }
+  .chlorine-opt .opt-name { font-size: 0.8rem; font-weight: 700; color: #1b3a6b; }
+  .chlorine-opt .opt-desc { font-size: 0.68rem; color: #6b7c93; margin-top: 2px; }
+  .chlorine-opt .opt-conc { margin-top: 8px; display: none; }
+  .chlorine-opt.selected .opt-conc { display: block; }
+  .conc-select { width: 100%; padding: 6px 8px; border: 1.5px solid #1b3a6b; border-radius: 7px; font-size: 0.78rem; color: #1b3a6b; background: #fff; font-weight: 600; outline: none; }
+
+  .btn-calc {
+    width: 100%; padding: 16px;
+    background: linear-gradient(135deg, #1b3a6b, #2a5298);
+    color: #fff; border: none; border-radius: 14px; font-size: 1.05rem; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.3px; box-shadow: 0 4px 14px rgba(27,58,107,0.25);
+    transition: opacity 0.2s; margin-top: 4px;
+  }
+  .btn-calc:active { opacity: 0.85; }
+
+  .results { display: none; }
+  .results.show { display: block; }
+
+  .result-card { background: linear-gradient(135deg,#1b3a6b,#2a5298); border-radius: 16px; padding: 22px 20px; color: #fff; margin-bottom: 14px; }
+  .result-card .r-label { font-size: 0.7rem; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+  .result-card .r-value { font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; }
+  .result-card .r-unit  { font-size: 0.85rem; opacity: 0.8; margin-top: 2px; }
+  .result-card .r-sub   { font-size: 0.8rem; opacity: 0.7; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px; }
+
+  .warning-card { background:#fff8e1; border-left:4px solid #ffc107; border-radius:10px; padding:14px 16px; font-size:0.82rem; color:#5a3e00; margin-bottom:14px; display:none; }
+  .warning-card.show { display:block; }
+  .warning-card strong { display:block; margin-bottom:4px; }
+
+  .danger-card { background:#ffebee; border-left:4px solid #c62828; border-radius:10px; padding:14px 16px; font-size:0.82rem; color:#7f0000; margin-bottom:14px; display:none; }
+  .danger-card.show { display:block; }
+  .danger-card strong { display:block; margin-bottom:4px; }
+
+  .dose-info { background:#e8f5e9; border-radius:10px; padding:12px 14px; font-size:0.78rem; color:#1b5e20; margin-bottom:14px; }
+
+  .btn-reset { width:100%; padding:13px; background:transparent; color:#1b3a6b; border:2px solid #1b3a6b; border-radius:14px; font-size:0.95rem; font-weight:600; cursor:pointer; }
+
+  .footer { text-align:center; font-size:0.68rem; color:#a0b0c0; margin-top:10px; line-height:1.5; }
+
+  .ntu-marker { height:6px; border-radius:3px; background:linear-gradient(to right,#4caf8a,#8bc34a,#ffc107,#ff7043,#c62828); margin:8px 0 4px; position:relative; }
+  .ntu-pointer { width:14px; height:14px; background:#1b3a6b; border-radius:50%; position:absolute; top:-4px; transform:translateX(-50%); border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,0.3); transition:left 0.3s; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-text">
+    <div class="name">Stefano Gambini</div>
+    <div class="title">Geologist and WASH Specialist</div>
+  </div>
+  <div class="subtitle">Well Water Chlorination Calculator</div>
+</header>
+
+<div class="container">
+  <div class="card">
+    <div class="card-title"><span>💧</span> Tank Capacity</div>
+    <label for="volume">Volume</label>
+    <div class="input-row">
+      <input type="number" id="volume" placeholder="e.g. 5000" min="1" inputmode="decimal">
+      <select class="unit-select" id="volumeUnit">
+        <option value="L">L</option>
+        <option value="m3">m³</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span>🌊</span> Turbidity</div>
+    <label for="ntu">Turbidity value (NTU)</label>
+    <div class="input-row">
+      <input type="number" id="ntu" placeholder="e.g. 4" min="0" step="0.1" inputmode="decimal">
+    </div>
+    <div class="ntu-marker"><div class="ntu-pointer" id="ntuPointer" style="left:0%"></div></div>
+    <div class="ntu-scale">
+      <div class="ntu-c1">&lt;1<br>Clear</div>
+      <div class="ntu-c2">1–5<br>Low</div>
+      <div class="ntu-c3">5–10<br>Mod</div>
+      <div class="ntu-c4">10–50<br>High</div>
+      <div class="ntu-c5">&gt;50<br>Very High</div>
+    </div>
+    <div class="ntu-hint">WHO drinking water guideline: ≤ 1 NTU (≤ 4 NTU acceptable)</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span>🧪</span> Chlorinating Agent</div>
+    <div class="chlorine-options">
+      <div class="chlorine-opt selected" id="opt-sodium" onclick="selectChlorine('sodium')">
+        <div class="opt-icon">🫙</div>
+        <div class="opt-name">Sodium Hypochlorite</div>
+        <div class="opt-desc">Liquid bleach (NaOCl)</div>
+        <div class="opt-conc">
+          <select class="conc-select" id="conc-sodium">
+            <option value="5">5% (household)</option>
+            <option value="10" selected>10% (standard)</option>
+            <option value="12">12% (industrial)</option>
+            <option value="15">15% (concentrated)</option>
+          </select>
+        </div>
+      </div>
+      <div class="chlorine-opt" id="opt-calcium" onclick="selectChlorine('calcium')">
+        <div class="opt-icon">🥄</div>
+        <div class="opt-name">Calcium Hypochlorite</div>
+        <div class="opt-desc">Granular / powder (HTH)</div>
+        <div class="opt-conc">
+          <select class="conc-select" id="conc-calcium">
+            <option value="65" selected>65% (standard)</option>
+            <option value="70">70% (high-grade)</option>
+          </select>
+        </div>
+      </div>
+      <div class="chlorine-opt" id="opt-tablet" onclick="selectChlorine('tablet')">
+        <div class="opt-icon">💊</div>
+        <div class="opt-name">Chlorine Tablets</div>
+        <div class="opt-desc">NaDCC / Trichlorine</div>
+        <div class="opt-conc">
+          <select class="conc-select" id="conc-tablet">
+            <option value="67" selected>NaDCC 67%</option>
+            <option value="90">Trichlor 90%</option>
+          </select>
+        </div>
+      </div>
+      <div class="chlorine-opt" id="opt-gas" onclick="selectChlorine('gas')">
+        <div class="opt-icon">⚗️</div>
+        <div class="opt-name">Chlorine Gas</div>
+        <div class="opt-desc">Cl₂ gas (100%)</div>
+        <div class="opt-conc"></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-calc" onclick="calculate()">Calculate Chlorine Dose</button>
+
+  <div class="results" id="results">
+    <br>
+    <div class="warning-card" id="warningCard"><strong>⚠️ Pre-treatment Recommended</strong><span id="warningText"></span></div>
+    <div class="danger-card"  id="dangerCard"><strong>🚫 Very High Turbidity</strong><span id="dangerText"></span></div>
+    <div class="result-card">
+      <div class="r-label">Chlorine Dose Required</div>
+      <div class="r-value" id="rValue">—</div>
+      <div class="r-unit"  id="rUnit">—</div>
+      <div class="r-sub"   id="rSub">—</div>
+    </div>
+    <div class="dose-info" id="doseInfo"></div>
+    <button class="btn-reset" onclick="reset()">↺ New Calculation</button>
+  </div>
+
+  <div class="footer">
+    Dosages are indicative and based on WHO/SPHERE guidelines.<br>
+    Always verify residual chlorine after treatment (target: 0.2–0.5 mg/L free Cl₂).<br><br>
+    © Stefano Gambini – Geologist &amp; WASH Specialist
+  </div>
+</div>
+
+<script>
+  let selectedChlorine = 'sodium';
+
+  function selectChlorine(t) {
+    document.querySelectorAll('.chlorine-opt').forEach(el => el.classList.remove('selected'));
+    document.getElementById('opt-'+t).classList.add('selected');
+    selectedChlorine = t;
+  }
+
+  document.getElementById('ntu').addEventListener('input', function(){
+    const v = Math.min(parseFloat(this.value)||0, 100);
+    document.getElementById('ntuPointer').style.left = (v/100*100)+'%';
+  });
+
+  function getChlorineDose(ntu){
+    if(ntu<1)  return {dose:0.5, label:"Clear water"};
+    if(ntu<5)  return {dose:1.0, label:"Low turbidity"};
+    if(ntu<10) return {dose:2.0, label:"Moderate turbidity"};
+    if(ntu<50) return {dose:3.0, label:"High turbidity"};
+    return {dose:5.0, label:"Very high turbidity"};
+  }
+
+  function calculate(){
+    const volRaw = parseFloat(document.getElementById('volume').value);
+    const unit   = document.getElementById('volumeUnit').value;
+    const ntu    = parseFloat(document.getElementById('ntu').value);
+    if(isNaN(volRaw)||volRaw<=0){alert("Please enter a valid tank volume.");return;}
+    if(isNaN(ntu)||ntu<0){alert("Please enter a valid turbidity value (NTU).");return;}
+
+    const volL = unit==='m3' ? volRaw*1000 : volRaw;
+    const {dose,label} = getChlorineDose(ntu);
+    const totalClG = (dose*volL)/1000;
+
+    document.getElementById('warningCard').classList.remove('show');
+    document.getElementById('dangerCard').classList.remove('show');
+    if(ntu>=50){
+      document.getElementById('dangerCard').classList.add('show');
+      document.getElementById('dangerText').textContent=" Turbidity ≥ 50 NTU: chlorination alone is insufficient. Pre-treatment by settling and/or filtration is required before disinfection.";
+    } else if(ntu>=10){
+      document.getElementById('warningCard').classList.add('show');
+      document.getElementById('warningText').textContent=" Turbidity ≥ 10 NTU: pre-settling or coagulation is strongly recommended to improve chlorination effectiveness.";
+    }
+
+    let rValue,rUnit,rSub,doseInfo;
+
+    if(selectedChlorine==='sodium'){
+      const c=parseFloat(document.getElementById('conc-sodium').value);
+      const mL=totalClG/(c/100);
+      rValue=mL<1000?mL.toFixed(1):(mL/1000).toFixed(2);
+      rUnit =mL<1000?"mL of Sodium Hypochlorite":"L of Sodium Hypochlorite";
+      rSub  =`${c}% NaOCl · Dose: ${dose} mg/L Cl₂ · ${label}`;
+      doseInfo=`ℹ️ Corresponds to ${totalClG.toFixed(2)} g of pure Cl₂ for ${volL.toLocaleString()} L. Add slowly, stir well, wait 30 min before use.`;
+    } else if(selectedChlorine==='calcium'){
+      const c=parseFloat(document.getElementById('conc-calcium').value);
+      const g=totalClG/(c/100);
+      rValue=g<1000?g.toFixed(2):(g/1000).toFixed(3);
+      rUnit =g<1000?"g of Calcium Hypochlorite":"kg of Calcium Hypochlorite";
+      rSub  =`Ca(ClO)₂ ${c}% · Dose: ${dose} mg/L Cl₂ · ${label}`;
+      doseInfo=`ℹ️ Dissolve in a small amount of water before adding to tank. Stir and wait 30 min. Pure Cl₂: ${totalClG.toFixed(2)} g.`;
+    } else if(selectedChlorine==='tablet'){
+      const c=parseFloat(document.getElementById('conc-tablet').value);
+      const g=totalClG/(c/100);
+      let tabInfo="";
+      [0.5,1.0,3.3,8.5].forEach(s=>{ tabInfo+=`${Math.ceil(g/s)}×${s}g  `; });
+      rValue=g.toFixed(2); rUnit="g of Chlorine Tablets";
+      rSub  =`${c}% available Cl₂ · Dose: ${dose} mg/L · ${label}`;
+      doseInfo=`ℹ️ Tablet options: ${tabInfo.trim()}. Allow full dissolution before distributing water.`;
+    } else {
+      rValue=totalClG.toFixed(2); rUnit="g of Chlorine Gas (Cl₂)";
+      rSub  =`100% Cl₂ · Dose: ${dose} mg/L · ${label}`;
+      doseInfo=`⚠️ Chlorine gas requires specialised equipment and trained personnel. Always follow safety protocols (PPE, ventilation, gas detection).`;
+    }
+
+    document.getElementById('rValue').textContent=rValue;
+    document.getElementById('rUnit').textContent=rUnit;
+    document.getElementById('rSub').textContent=rSub;
+    document.getElementById('doseInfo').textContent=doseInfo;
+    document.getElementById('results').classList.add('show');
+    document.getElementById('results').scrollIntoView({behavior:'smooth'});
+  }
+
+  function reset(){
+    document.getElementById('volume').value='';
+    document.getElementById('ntu').value='';
+    document.getElementById('ntuPointer').style.left='0%';
+    document.getElementById('results').classList.remove('show');
+    document.getElementById('warningCard').classList.remove('show');
+    document.getElementById('dangerCard').classList.remove('show');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
