@@ -1,365 +1,873 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Chlorine Calc</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Chlorine Calc">
-
-<script>
-// Service Worker per uso offline
-if('serviceWorker' in navigator){
-  const sw = `
-    self.addEventListener('install', e => self.skipWaiting());
-    self.addEventListener('fetch', e => {
-      e.respondWith(caches.open('chlorine-v1').then(cache =>
-        cache.match(e.request).then(r => r || fetch(e.request).then(res => {
-          cache.put(e.request, res.clone()); return res;
-        }))
-      ));
-    });
-  `;
-  const blob = new Blob([sw], {type:'application/javascript'});
-  const url = URL.createObjectURL(blob);
-  navigator.serviceWorker.register(url);
-}
-</script>
-
-<script>
-(function(){
-  var c = document.createElement('canvas');
-  c.width = 180; c.height = 180;
-  var ctx = c.getContext('2d');
-  var g = ctx.createLinearGradient(0,0,180,180);
-  g.addColorStop(0,'#1b3a6b');
-  g.addColorStop(1,'#2a5298');
-  ctx.fillStyle = g;
-  var r = 32;
-  ctx.beginPath();
-  ctx.moveTo(r,0); ctx.lineTo(180-r,0);
-  ctx.quadraticCurveTo(180,0,180,r);
-  ctx.lineTo(180,180-r);
-  ctx.quadraticCurveTo(180,180,180-r,180);
-  ctx.lineTo(r,180); ctx.quadraticCurveTo(0,180,0,180-r);
-  ctx.lineTo(0,r); ctx.quadraticCurveTo(0,0,r,0);
-  ctx.closePath(); ctx.fill();
-  ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 9;
-  ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.moveTo(120,36);
-  ctx.bezierCurveTo(120,36, 55,36, 46,62);
-  ctx.bezierCurveTo(37,88, 100,92, 100,118);
-  ctx.bezierCurveTo(100,144, 40,144, 40,144);
-  ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(108,28); ctx.lineTo(120,36); ctx.lineTo(112,48); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(52,152); ctx.lineTo(40,144); ctx.lineTo(48,132); ctx.stroke();
-  ctx.lineWidth = 7;
-  [[18,58],[18,90],[18,122]].forEach(function(p){
-    ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(42,p[1]); ctx.stroke();
-  });
-  ctx.fillStyle = 'rgba(255,255,255,0.85)';
-  ctx.font = 'bold 18px -apple-system, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('Chlorine Calc', 90, 168);
-  var link = document.createElement('link');
-  link.rel = 'apple-touch-icon';
-  link.href = c.toDataURL('image/png');
-  document.head.appendChild(link);
-})();
-</script>
+<meta name="apple-mobile-web-app-title" content="ChlorCalc">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#007AFF">
+<title>ChlorCalc — Annex C</title>
+<link rel="manifest" href='data:application/manifest+json,{"name":"ChlorCalc%20%E2%80%94%20Annex%20C","short_name":"ChlorCalc","description":"Field%20chlorination%20calculator%20per%20Annex%20C%20WHO%2FMSFSphere","start_url":"./","display":"standalone","orientation":"portrait","background_color":"%23F2F2F7","theme_color":"%23007AFF","icons":[{"src":"data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20512%20512%27%3E%3Crect%20width%3D%27512%27%20height%3D%27512%27%20rx%3D%27120%27%20fill%3D%27%23007AFF%27%2F%3E%3Ctext%20x%3D%27256%27%20y%3D%27340%27%20font-size%3D%27260%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%3E%F0%9F%92%A7%3C%2Ftext%3E%3C%2Fsvg%3E","sizes":"512x512","type":"image/svg+xml","purpose":"any maskable"}]}'>
 
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #f0f6fb;
-    min-height: 100vh;
-    color: #1a2a3a;
-  }
-  header {
-    background: #fff;
-    padding: 20px 20px 16px;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  }
-  .header-text .name { font-size: 1.4rem; font-weight: 700; color: #1b3a6b; letter-spacing: -0.3px; }
-  .header-text .title { font-size: 0.82rem; color: #6b7c93; font-weight: 400; margin-top: 3px; }
-  .subtitle { margin-top: 8px; font-size: 0.72rem; color: #8fa3b8; letter-spacing: 0.8px; text-transform: uppercase; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#007AFF;--green:#34C759;--orange:#FF9500;--red:#FF3B30;--yellow:#FFCC00;
+  --bg:#F2F2F7;--card:#FFFFFF;--label:#000;--label2:rgba(60,60,67,.75);
+  --label3:rgba(60,60,67,.5);--sep:rgba(60,60,67,.2);--fill:rgba(120,120,128,.12);
+  --fill2:rgba(120,120,128,.2);--safe-top:env(safe-area-inset-top,44px);
+  --safe-bot:env(safe-area-inset-bottom,20px);
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#000;--card:#1C1C1E;--label:#FFF;--label2:rgba(235,235,245,.6);
+  --label3:rgba(235,235,245,.3);--sep:rgba(84,84,88,.5);
+  --fill:rgba(118,118,128,.24);--fill2:rgba(118,118,128,.36);
+}}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
+  background:var(--bg);color:var(--label);font-size:17px;
+  min-height:100dvh;padding-bottom:calc(56px + var(--safe-bot));
+  -webkit-tap-highlight-color:transparent;
+}
+.hdr{
+  position:sticky;top:0;z-index:90;
+  background:rgba(242,242,247,.85);
+  backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
+  border-bottom:.5px solid var(--sep);
+  padding:calc(var(--safe-top) + 6px) 20px 10px;
+}
+@media(prefers-color-scheme:dark){.hdr{background:rgba(0,0,0,.85)}}
+.hdr-title{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.hdr-sub{font-size:12px;color:var(--label3);margin-top:1px}
 
-  .container { max-width: 480px; margin: 0 auto; padding: 20px 16px 40px; }
+.view{display:none;padding:16px 16px 8px}
+.view.active{display:block}
 
-  .card { background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(27,58,107,0.07); }
-  .card-title { font-size: 0.7rem; font-weight: 700; color: #1b3a6b; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; gap: 7px; }
-  .card-title span { font-size: 1rem; }
+.tabbar{
+  position:fixed;bottom:0;left:0;right:0;z-index:90;display:flex;
+  background:rgba(242,242,247,.92);
+  backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
+  border-top:.5px solid var(--sep);padding-bottom:var(--safe-bot);
+}
+@media(prefers-color-scheme:dark){.tabbar{background:rgba(0,0,0,.92)}}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 0 4px;
+  cursor:pointer;color:var(--label3);-webkit-user-select:none;user-select:none;gap:3px}
+.tab.on{color:var(--blue)}
+.tab svg{width:22px;height:22px}
+.tab span{font-size:10px;font-weight:500;letter-spacing:.2px}
 
-  label { display: block; font-size: 0.82rem; color: #4a5568; margin-bottom: 5px; font-weight: 500; }
-  .input-row { display: flex; gap: 8px; align-items: stretch; }
-  input[type=number] {
-    flex: 1; padding: 13px 14px; border: 1.5px solid #d0dce8; border-radius: 10px;
-    font-size: 1.05rem; color: #1a2a3a; background: #f8fbff; outline: none;
-    transition: border 0.2s; -webkit-appearance: none;
-  }
-  input[type=number]:focus { border-color: #1b3a6b; background: #fff; }
-  .unit-select {
-    padding: 13px 10px; border: 1.5px solid #d0dce8; border-radius: 10px;
-    font-size: 0.9rem; color: #1b3a6b; background: #eef4fb; font-weight: 600;
-    outline: none; cursor: pointer; min-width: 70px;
-  }
+.sec-h{font-size:22px;font-weight:700;letter-spacing:-.3px;padding:12px 0 2px}
+.sec-s{font-size:14px;color:var(--label3);margin-bottom:14px}
 
-  .ntu-hint { font-size: 0.72rem; color: #8fa3b8; margin-top: 6px; }
-  .ntu-scale { display: flex; margin-top: 8px; border-radius: 8px; overflow: hidden; }
-  .ntu-scale div { flex: 1; padding: 5px 3px; text-align: center; font-size: 0.62rem; font-weight: 600; color: #fff; }
-  .ntu-c1{background:#4caf8a} .ntu-c2{background:#8bc34a} .ntu-c3{background:#ffc107;color:#5a3e00} .ntu-c4{background:#ff7043} .ntu-c5{background:#c62828}
+.card{background:var(--card);border-radius:12px;overflow:hidden;margin-bottom:18px}
+.c-hdr{padding:11px 16px 8px;font-size:12px;font-weight:600;letter-spacing:.5px;
+  text-transform:uppercase;color:var(--label3)}
 
-  .chlorine-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .chlorine-opt { border: 2px solid #d0dce8; border-radius: 12px; padding: 12px 10px; cursor: pointer; transition: all 0.18s; text-align: center; background: #f8fbff; }
-  .chlorine-opt.selected { border-color: #1b3a6b; background: #eef4fb; }
-  .chlorine-opt .opt-icon { font-size: 1.5rem; margin-bottom: 4px; }
-  .chlorine-opt .opt-name { font-size: 0.8rem; font-weight: 700; color: #1b3a6b; }
-  .chlorine-opt .opt-desc { font-size: 0.68rem; color: #6b7c93; margin-top: 2px; }
-  .chlorine-opt .opt-conc { margin-top: 8px; display: none; }
-  .chlorine-opt.selected .opt-conc { display: block; }
-  .conc-select { width: 100%; padding: 6px 8px; border: 1.5px solid #1b3a6b; border-radius: 7px; font-size: 0.78rem; color: #1b3a6b; background: #fff; font-weight: 600; outline: none; }
+.frow{display:flex;align-items:center;padding:11px 16px;
+  border-top:.5px solid var(--sep);gap:10px}
+.frow:first-of-type{border-top:none}
+.frow label{flex:1;font-size:15px;line-height:1.3}
+.frow .u{font-size:13px;color:var(--label3);min-width:24px;text-align:right;flex-shrink:0}
+.frow input{
+  width:88px;border:none;border-radius:8px;padding:7px 10px;
+  font-size:16px;font-family:inherit;color:var(--label);
+  background:var(--fill);text-align:right;outline:none;-webkit-appearance:none;
+}
+.frow input:focus{background:var(--fill2);box-shadow:0 0 0 3px rgba(0,122,255,.25)}
+.frow input::placeholder{color:var(--label3)}
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
 
-  .btn-calc {
-    width: 100%; padding: 16px;
-    background: linear-gradient(135deg, #1b3a6b, #2a5298);
-    color: #fff; border: none; border-radius: 14px; font-size: 1.05rem; font-weight: 700;
-    cursor: pointer; letter-spacing: 0.3px; box-shadow: 0 4px 14px rgba(27,58,107,0.25);
-    transition: opacity 0.2s; margin-top: 4px;
-  }
-  .btn-calc:active { opacity: 0.85; }
+/* unit toggle row — lives inside a card */
+.utrow{
+  display:flex;align-items:center;padding:10px 16px;
+  border-top:.5px solid var(--sep);gap:10px;
+}
+.utrow .utl{flex:1;font-size:14px;color:var(--label2)}
+.seg{display:flex;background:var(--fill);border-radius:9px;padding:2px;flex-shrink:0}
+.sbtn{
+  flex:1;border:none;background:transparent;border-radius:7px;
+  font-size:13px;font-weight:500;color:var(--label);cursor:pointer;
+  padding:6px 14px;font-family:inherit;-webkit-user-select:none;user-select:none;
+  transition:background .15s;white-space:nowrap;
+}
+.sbtn.on{background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.15)}
 
-  .results { display: none; }
-  .results.show { display: block; }
+.vtrow{display:flex;align-items:center;padding:10px 16px;border-top:.5px solid var(--sep);gap:8px}
+.vtrow .vl{flex:1;font-size:13px;color:var(--label3)}
+.vtrow .vv{font-size:20px;font-weight:700;color:var(--blue);font-variant-numeric:tabular-nums}
+.vtrow .vu{font-size:13px;color:var(--label3)}
 
-  .result-card { background: linear-gradient(135deg,#1b3a6b,#2a5298); border-radius: 16px; padding: 22px 20px; color: #fff; margin-bottom: 14px; }
-  .result-card .r-label { font-size: 0.7rem; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
-  .result-card .r-value { font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; }
-  .result-card .r-unit  { font-size: 0.85rem; opacity: 0.8; margin-top: 2px; }
-  .result-card .r-sub   { font-size: 0.8rem; opacity: 0.7; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px; }
+/* buttons */
+.btn{
+  display:block;width:100%;padding:15px;border:none;border-radius:12px;
+  font-size:17px;font-weight:600;font-family:inherit;cursor:pointer;
+  margin-bottom:10px;transition:opacity .15s,transform .1s;color:#fff;
+  background:var(--blue);-webkit-user-select:none;user-select:none;
+}
+.btn:active{opacity:.8;transform:scale(.98)}
+.btn.red{background:var(--red)}
+/* secondary / reset button */
+.btn-sec{
+  display:block;width:100%;padding:13px;border:none;border-radius:12px;
+  font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;
+  margin-bottom:20px;transition:opacity .15s,transform .1s;
+  background:var(--fill);color:var(--label2);
+  -webkit-user-select:none;user-select:none;
+}
+.btn-sec:active{opacity:.7;transform:scale(.98)}
 
-  .warning-card { background:#fff8e1; border-left:4px solid #ffc107; border-radius:10px; padding:14px 16px; font-size:0.82rem; color:#5a3e00; margin-bottom:14px; display:none; }
-  .warning-card.show { display:block; }
-  .warning-card strong { display:block; margin-bottom:4px; }
+/* turbidity badge */
+.tbadge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 8px;
+  border-radius:20px;font-size:13px;font-weight:600;margin:10px 16px 8px}
+.tdot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.t-clear{background:rgba(52,199,89,.12);color:#1A7A3C}
+.t-slight{background:rgba(255,204,0,.15);color:#7A5C00}
+.t-turbid{background:rgba(255,149,0,.15);color:#B05E00}
+.t-very{background:rgba(255,59,48,.12);color:#AA2500}
+.t-high{background:rgba(255,59,48,.2);color:#AA2500}
+@media(prefers-color-scheme:dark){
+  .t-clear{color:#30D158}.t-slight{color:#FFD60A}.t-turbid{color:#FF9F0A}.t-very,.t-high{color:#FF453A}
+}
 
-  .danger-card { background:#ffebee; border-left:4px solid #c62828; border-radius:10px; padding:14px 16px; font-size:0.82rem; color:#7f0000; margin-bottom:14px; display:none; }
-  .danger-card.show { display:block; }
-  .danger-card strong { display:block; margin-bottom:4px; }
+.alrt{margin:0 16px 12px;padding:11px 13px;border-radius:10px;
+  font-size:13px;line-height:1.5;display:flex;gap:9px;align-items:flex-start}
+.alrt-w{background:rgba(255,149,0,.1);color:#8B4E00}
+.alrt-d{background:rgba(255,59,48,.1);color:#8B1700}
+@media(prefers-color-scheme:dark){.alrt-w{color:#FF9F0A}.alrt-d{color:#FF453A}}
+.ai{font-size:15px;flex-shrink:0}
 
-  .dose-info { background:#e8f5e9; border-radius:10px; padding:12px 14px; font-size:0.78rem; color:#1b5e20; margin-bottom:14px; }
+.ctrow{display:flex;align-items:center;padding:12px 16px;gap:13px;border-top:.5px solid var(--sep)}
+.ctcirc{width:54px;height:54px;border-radius:50%;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;flex-shrink:0;background:var(--green)}
+.ctcirc .n{font-size:18px;font-weight:700;color:#fff;line-height:1}
+.ctcirc .l{font-size:9px;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:.5px}
+.ctinfo .t{font-size:15px;font-weight:600}
+.ctinfo .s{font-size:13px;color:var(--label3);margin-top:3px;line-height:1.3}
 
-  .btn-reset { width:100%; padding:13px; background:transparent; color:#1b3a6b; border:2px solid #1b3a6b; border-radius:14px; font-size:0.95rem; font-weight:600; cursor:pointer; }
+.rrow{display:flex;align-items:center;padding:12px 16px;border-top:.5px solid var(--sep);gap:8px}
+.rrow:first-child{border-top:none}
+.rl{flex:1;font-size:15px}
+.rl small{display:block;font-size:12px;color:var(--label3);margin-top:2px;font-family:'SF Mono',monospace}
+.rv{font-size:20px;font-weight:700;color:var(--blue);font-variant-numeric:tabular-nums}
+.ru{font-size:13px;color:var(--label3)}
 
-  .footer { text-align:center; font-size:0.68rem; color:#a0b0c0; margin-top:10px; line-height:1.5; }
+.aitem{padding:13px 16px;border-top:.5px solid var(--sep)}
+.aitem:first-child{border-top:none}
+.aname{font-size:15px;font-weight:600;margin-bottom:4px}
+.asub{font-size:12px;color:var(--label3);margin-bottom:10px;line-height:1.4}
+.dline{display:flex;align-items:center;background:var(--fill);
+  border-radius:8px;padding:8px 12px;margin-bottom:6px}
+.dline:last-child{margin-bottom:0}
+.dpct{flex:1;font-size:13px;color:var(--label2)}
+.dval{font-size:18px;font-weight:700;color:var(--blue);font-variant-numeric:tabular-nums}
+.dunit{font-size:12px;color:var(--label3);margin-left:3px}
+.dsafe{font-size:11px;color:var(--orange);margin-left:6px}
 
-  .ntu-marker { height:6px; border-radius:3px; background:linear-gradient(to right,#4caf8a,#8bc34a,#ffc107,#ff7043,#c62828); margin:8px 0 4px; position:relative; }
-  .ntu-pointer { width:14px; height:14px; background:#1b3a6b; border-radius:50%; position:absolute; top:-4px; transform:translateX(-50%); border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,0.3); transition:left 0.3s; }
+.frcrow{display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:.5px solid var(--sep)}
+.frcrow:first-child{border-top:none}
+.frcl{flex:1;font-size:15px}
+.frcs{font-size:20px}
+
+.shockbanner{display:flex;gap:9px;background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.2);
+  border-radius:10px;padding:12px 14px;margin-bottom:18px;
+  font-size:13px;color:#8B1700;line-height:1.5}
+@media(prefers-color-scheme:dark){.shockbanner{color:#FF453A}}
+
+.proc{padding:12px 16px;font-size:14px;color:var(--label);line-height:1.6}
+.pline{display:flex;gap:9px;margin-bottom:9px;align-items:flex-start}
+.pline:last-child{margin-bottom:0}
+.pnum{font-weight:700;color:var(--blue);flex-shrink:0;min-width:22px}
+
+.gtbl{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+.gtbl th{padding:8px 10px;background:var(--fill);color:var(--label2);
+  font-weight:600;font-size:11px;text-align:left}
+.gtbl td{padding:9px 10px;border-bottom:.5px solid var(--sep);color:var(--label);vertical-align:top}
+.gtbl tr:last-child td{border-bottom:none}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 7px;border-radius:4px}
+.tag-ok{background:rgba(52,199,89,.12);color:#1A7A3C}
+.tag-wr{background:rgba(255,149,0,.12);color:#8B4E00}
+.tag-er{background:rgba(255,59,48,.1);color:#8B1700}
+@media(prefers-color-scheme:dark){.tag-ok{color:#30D158}.tag-wr{color:#FF9F0A}.tag-er{color:#FF453A}}
+
+.ph{text-align:center;padding:40px 20px;color:var(--label3)}
+.ph .ico{font-size:44px;display:block;margin-bottom:10px}
+.ph p{font-size:15px}
+.hidden{display:none!important}
+.mono{font-family:'SF Mono','Courier New',monospace;font-size:13px;
+  background:var(--fill);border-radius:5px;padding:1px 5px}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="header-text">
-    <div class="name">Stefano Gambini</div>
-    <div class="title">Geologist and WASH Specialist</div>
-  </div>
-  <div class="subtitle">Well Water Chlorination Calculator</div>
+<header class="hdr">
+  <div class="hdr-title">💧 ChlorCalc</div>
+  <div class="hdr-sub">Annex C — WHO · MSF · Sphere Standards</div>
 </header>
 
-<div class="container">
-  <div class="card">
-    <div class="card-title"><span>💧</span> Tank Capacity</div>
-    <label for="volume">Volume</label>
-    <div class="input-row">
-      <input type="number" id="volume" placeholder="e.g. 5000" min="1" inputmode="decimal">
-      <select class="unit-select" id="volumeUnit">
-        <option value="L">L</option>
-        <option value="m3">m³</option>
-      </select>
-    </div>
-  </div>
+<!-- ══════════════════════════════════════════
+     VIEW 1 — ROUTINE
+══════════════════════════════════════════ -->
+<div id="v-routine" class="view active">
+  <div class="sec-h">Clorazione Routinaria</div>
+  <div class="sec-s">Dose per serbatoio + rete di distribuzione — Annex C §2</div>
 
   <div class="card">
-    <div class="card-title"><span>🌊</span> Turbidity</div>
-    <label for="ntu">Turbidity value (NTU)</label>
-    <div class="input-row">
-      <input type="number" id="ntu" placeholder="e.g. 4" min="0" step="0.1" inputmode="decimal">
+    <div class="c-hdr">① Volumi di sistema</div>
+
+    <!-- unit toggle -->
+    <div class="utrow">
+      <span class="utl">Unità di misura</span>
+      <div class="seg">
+        <button class="sbtn on" id="r-ul" onclick="switchUnit('r','L')">L</button>
+        <button class="sbtn" id="r-um" onclick="switchUnit('r','m3')">m³</button>
+      </div>
     </div>
-    <div class="ntu-marker"><div class="ntu-pointer" id="ntuPointer" style="left:0%"></div></div>
-    <div class="ntu-scale">
-      <div class="ntu-c1">&lt;1<br>Clear</div>
-      <div class="ntu-c2">1–5<br>Low</div>
-      <div class="ntu-c3">5–10<br>Mod</div>
-      <div class="ntu-c4">10–50<br>High</div>
-      <div class="ntu-c5">&gt;50<br>Very High</div>
+
+    <div class="frow">
+      <label>Volume serbatoio</label>
+      <input type="number" id="r-vtank" value="10000" step="any" inputmode="decimal" placeholder="10000">
+      <span class="u" id="r-u1">L</span>
     </div>
-    <div class="ntu-hint">WHO drinking water guideline: ≤ 1 NTU (≤ 4 NTU acceptable)</div>
+    <div class="frow">
+      <label>Volume distribuzione<br><span style="font-size:12px;color:var(--label3)">4 punti × 15 m DN32 + dead-legs</span></label>
+      <input type="number" id="r-vdist" value="1000" step="any" inputmode="decimal" placeholder="1000">
+      <span class="u" id="r-u2">L</span>
+    </div>
+    <div class="vtrow">
+      <span class="vl">V<sub>total</sub> = V<sub>tank</sub> + V<sub>dist</sub></span>
+      <span class="vv" id="r-vtotal">11 000</span>
+      <span class="vu" id="r-vtu">L</span>
+    </div>
   </div>
 
   <div class="card">
-    <div class="card-title"><span>🧪</span> Chlorinating Agent</div>
-    <div class="chlorine-options">
-      <div class="chlorine-opt selected" id="opt-sodium" onclick="selectChlorine('sodium')">
-        <div class="opt-icon">🫙</div>
-        <div class="opt-name">Sodium Hypochlorite</div>
-        <div class="opt-desc">Liquid bleach (NaOCl)</div>
-        <div class="opt-conc">
-          <select class="conc-select" id="conc-sodium">
-            <option value="5">5% (household)</option>
-            <option value="10" selected>10% (standard)</option>
-            <option value="12">12% (industrial)</option>
-            <option value="15">15% (concentrated)</option>
-          </select>
-        </div>
-      </div>
-      <div class="chlorine-opt" id="opt-calcium" onclick="selectChlorine('calcium')">
-        <div class="opt-icon">🥄</div>
-        <div class="opt-name">Calcium Hypochlorite</div>
-        <div class="opt-desc">Granular / powder (HTH)</div>
-        <div class="opt-conc">
-          <select class="conc-select" id="conc-calcium">
-            <option value="65" selected>65% (standard)</option>
-            <option value="70">70% (high-grade)</option>
-          </select>
-        </div>
-      </div>
-      <div class="chlorine-opt" id="opt-tablet" onclick="selectChlorine('tablet')">
-        <div class="opt-icon">💊</div>
-        <div class="opt-name">Chlorine Tablets</div>
-        <div class="opt-desc">NaDCC / Trichlorine</div>
-        <div class="opt-conc">
-          <select class="conc-select" id="conc-tablet">
-            <option value="67" selected>NaDCC 67%</option>
-            <option value="90">Trichlor 90%</option>
-          </select>
-        </div>
-      </div>
-      <div class="chlorine-opt" id="opt-gas" onclick="selectChlorine('gas')">
-        <div class="opt-icon">⚗️</div>
-        <div class="opt-name">Chlorine Gas</div>
-        <div class="opt-desc">Cl₂ gas (100%)</div>
-        <div class="opt-conc"></div>
-      </div>
+    <div class="c-hdr">② Qualità dell'acqua</div>
+    <div class="frow">
+      <label>Torbidità misurata<br><span style="font-size:12px;color:var(--label3)">Misura con tubo/nefelometro prima di ogni clorazione</span></label>
+      <input type="number" id="r-turb" step="any" inputmode="decimal" placeholder="NTU">
+      <span class="u">NTU</span>
+    </div>
+    <div class="frow">
+      <label>Domanda di cloro (CD)<br><span style="font-size:12px;color:var(--label3)">Default 2.0 mg/L per acqua superficiale torbida</span></label>
+      <input type="number" id="r-cd" value="2.0" step="0.1" inputmode="decimal" placeholder="2.0">
+      <span class="u">mg/L</span>
+    </div>
+    <div class="frow">
+      <label>FRC target (endpoint)<br><span style="font-size:12px;color:var(--label3)">Standard WHO/Sphere: 0.5 mg/L</span></label>
+      <input type="number" id="r-frc" value="0.5" step="0.1" inputmode="decimal" placeholder="0.5">
+      <span class="u">mg/L</span>
     </div>
   </div>
 
-  <button class="btn-calc" onclick="calculate()">Calculate Chlorine Dose</button>
+  <button class="btn" onclick="calcRoutine()">Calcola Dose</button>
+  <button class="btn-sec" onclick="resetRoutine()">↺ Reimposta</button>
 
-  <div class="results" id="results">
-    <br>
-    <div class="warning-card" id="warningCard"><strong>⚠️ Pre-treatment Recommended</strong><span id="warningText"></span></div>
-    <div class="danger-card"  id="dangerCard"><strong>🚫 Very High Turbidity</strong><span id="dangerText"></span></div>
-    <div class="result-card">
-      <div class="r-label">Chlorine Dose Required</div>
-      <div class="r-value" id="rValue">—</div>
-      <div class="r-unit"  id="rUnit">—</div>
-      <div class="r-sub"   id="rSub">—</div>
+  <!-- RISULTATI -->
+  <div id="r-results" class="hidden">
+
+    <div class="card">
+      <div class="c-hdr">Classe di torbidità — Annex C §2.2</div>
+      <div id="r-tbadge"></div>
+      <div id="r-talert"></div>
+      <div class="ctrow">
+        <div class="ctcirc" id="r-ctcirc">
+          <span class="n" id="r-ctnum">30</span>
+          <span class="l">min CT</span>
+        </div>
+        <div class="ctinfo">
+          <div class="t" id="r-cttitle">Tempo di contatto</div>
+          <div class="s" id="r-ctdesc">Minimo richiesto prima del consumo.</div>
+        </div>
+      </div>
     </div>
-    <div class="dose-info" id="doseInfo"></div>
-    <button class="btn-reset" onclick="reset()">↺ New Calculation</button>
+
+    <div class="card">
+      <div class="c-hdr">Dose calcolata — C₀ = CD + TCF + FRC</div>
+      <div class="rrow">
+        <div class="rl">TCF applicato<small>Fattore correzione torbidità (Tabella 2.2)</small></div>
+        <span class="rv" id="r-tcf">—</span><span class="ru">mg/L</span>
+      </div>
+      <div class="rrow">
+        <div class="rl">C₀ (dose iniziale)<small>= CD + TCF + FRC_target</small></div>
+        <span class="rv" id="r-c0">—</span><span class="ru">mg/L</span>
+      </div>
+      <div class="rrow">
+        <div class="rl">Massa Cl₂ puro<small>= C₀ × V_total ÷ 1 000</small></div>
+        <span class="rv" id="r-mass">—</span><span class="ru">g</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="c-hdr">Quantità per agente clorante — Annex C §3</div>
+      <div class="aitem">
+        <div class="aname">NaOCl — Ipoclorito di Sodio (liquido)</div>
+        <div class="asub">Dens. ≈ 1.10 g/mL (12%) | 1.05 g/mL (5%) · Shelf-life 3–6 mesi · Conservare al buio</div>
+        <div class="dline">
+          <span class="dpct">12% commerciale</span>
+          <span class="dval" id="r-n12">—</span><span class="dunit">mL</span>
+          <span class="dsafe" id="r-n12s"></span>
+        </div>
+        <div class="dline">
+          <span class="dpct">5% domestica</span>
+          <span class="dval" id="r-n5">—</span><span class="dunit">mL</span>
+        </div>
+      </div>
+      <div class="aitem">
+        <div class="aname">Ca(OCl)₂ — HTH / Granuli</div>
+        <div class="asub">Pre-disciogliere SEMPRE in ≥10 L acqua pulita · Shelf-life 1–2 anni · Ossidante forte</div>
+        <div class="dline">
+          <span class="dpct">65% standard</span>
+          <span class="dval" id="r-c65">—</span><span class="dunit">g</span>
+          <span class="dsafe" id="r-c65s"></span>
+        </div>
+        <div class="dline">
+          <span class="dpct">70% high-test</span>
+          <span class="dval" id="r-c70">—</span><span class="dunit">g</span>
+        </div>
+      </div>
+      <div class="aitem">
+        <div class="aname">NaDCC — Compresse</div>
+        <div class="asub">Verificare Cl₂/cp sull'etichetta · Shelf-life 3–5 anni · Pre-sciogliere in secchio</div>
+        <div class="dline">
+          <span class="dpct">Piccole 0.5 g Cl₂/cp</span>
+          <span class="dval" id="r-ns">—</span><span class="dunit">cp</span>
+        </div>
+        <div class="dline">
+          <span class="dpct">Grandi 2.5 g Cl₂/cp</span>
+          <span class="dval" id="r-nl">—</span><span class="dunit">cp</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="c-hdr">Controllo FRC post-clorazione — §6.1</div>
+      <div class="frcrow">
+        <div class="frcl">FRC accettabile al rubinetto più lontano</div>
+        <span class="rv" style="color:var(--green)">0.2–1.0</span><span class="ru">mg/L</span>
+      </div>
+      <div class="frcrow">
+        <div class="frcl">Se FRC &lt; 0.2 mg/L → ri-dosa e ripeti CT</div>
+        <span class="frcs">⚠️</span>
+      </div>
+      <div class="frcrow">
+        <div class="frcl">Se FRC &gt; 1.0 mg/L → flussare 2–5 min prima del consumo</div>
+        <span class="frcs">💧</span>
+      </div>
+    </div>
+
   </div>
 
-  <div class="footer">
-    Dosages are indicative and based on WHO/SPHERE guidelines.<br>
-    Always verify residual chlorine after treatment (target: 0.2–0.5 mg/L free Cl₂).<br><br>
-    © Stefano Gambini – Geologist &amp; WASH Specialist
+  <div id="r-ph" class="ph">
+    <span class="ico">🔬</span>
+    <p>Inserisci torbidità, CD, FRC<br>e premi <strong>Calcola Dose</strong></p>
   </div>
 </div>
 
+
+<!-- ══════════════════════════════════════════
+     VIEW 2 — SHOCK
+══════════════════════════════════════════ -->
+<div id="v-shock" class="view">
+  <div class="sec-h">Clorazione d'Urto</div>
+  <div class="sec-s">One-shot per serbatoi nuovi, riabilitati o contaminati — Annex C §5</div>
+
+  <div class="shockbanner">
+    <span style="font-size:16px">⚠️</span>
+    <div><strong>Procedura non routinaria.</strong> Dose fissa 50 mg/L — nessuna correzione torbidità. Contatto minimo 12–24 ore. Serbatoio VUOTO o al 10% di capacità.</div>
+  </div>
+
+  <div class="card">
+    <div class="c-hdr">Volumi di sistema</div>
+
+    <!-- unit toggle -->
+    <div class="utrow">
+      <span class="utl">Unità di misura</span>
+      <div class="seg">
+        <button class="sbtn on" id="s-ul" onclick="switchUnit('s','L')">L</button>
+        <button class="sbtn" id="s-um" onclick="switchUnit('s','m3')">m³</button>
+      </div>
+    </div>
+
+    <div class="frow">
+      <label>Volume serbatoio</label>
+      <input type="number" id="s-vtank" value="10000" step="any" inputmode="decimal" placeholder="10000">
+      <span class="u" id="s-u1">L</span>
+    </div>
+    <div class="frow">
+      <label>Volume distribuzione</label>
+      <input type="number" id="s-vdist" value="1000" step="any" inputmode="decimal" placeholder="1000">
+      <span class="u" id="s-u2">L</span>
+    </div>
+    <div class="vtrow">
+      <span class="vl">V<sub>total</sub></span>
+      <span class="vv" id="s-vtotal">11 000</span>
+      <span class="vu" id="s-vtu">L</span>
+    </div>
+  </div>
+
+  <button class="btn red" onclick="calcShock()">Calcola Dose d'Urto</button>
+  <button class="btn-sec" onclick="resetShock()">↺ Reimposta</button>
+
+  <div id="s-results" class="hidden">
+    <div class="card">
+      <div class="c-hdr">Dose d'urto — C₀ fissa = 50 mg/L</div>
+      <div class="rrow">
+        <div class="rl">Dose fissa (WHO shock)<small>Nessun TCF — 50 mg/L sempre</small></div>
+        <span class="rv" style="color:var(--red)">50</span><span class="ru">mg/L</span>
+      </div>
+      <div class="rrow">
+        <div class="rl">Massa Cl₂ puro<small>= 50 × V_total ÷ 1 000</small></div>
+        <span class="rv" style="color:var(--red)" id="s-mass">—</span><span class="ru">g</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="c-hdr">Quantità per agente — Annex C §5</div>
+      <div class="aitem">
+        <div class="aname">NaOCl 12%</div>
+        <div class="dline"><span class="dpct">Volume da aggiungere</span>
+          <span class="dval" id="s-n12">—</span><span class="dunit">mL</span></div>
+        <div style="font-size:12px;color:var(--label3);margin-top:6px">≈ <span id="s-n12l">—</span> L</div>
+      </div>
+      <div class="aitem">
+        <div class="aname">Ca(OCl)₂ 65% — Pre-disciogliere</div>
+        <div class="dline"><span class="dpct">Massa da aggiungere</span>
+          <span class="dval" id="s-c65">—</span><span class="dunit">g</span></div>
+      </div>
+      <div class="aitem">
+        <div class="aname">NaDCC compresse piccole (0.5 g Cl₂/cp)</div>
+        <div class="dline"><span class="dpct">Numero compresse</span>
+          <span class="dval" id="s-ns">—</span><span class="dunit">cp</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="c-hdr">Procedura d'urto — Annex C §5</div>
+      <div class="proc">
+        <div class="pline"><span class="pnum">1</span><span>Riempire il serbatoio al <strong>10% della capacità</strong> con acqua pulita; aggiungere la dose e mescolare bene.</span></div>
+        <div class="pline"><span class="pnum">2</span><span>Aprire ogni rubinetto in sequenza per riempire l'intera rete con la soluzione ad alta dose.</span></div>
+        <div class="pline"><span class="pnum">3</span><span>Chiudere tutti i rubinetti. Lasciare agire <strong>12–24 ore</strong>. La soluzione deve raggiungere il punto più lontano.</span></div>
+        <div class="pline"><span class="pnum">4</span><span>Flussare tutto il sistema finché FRC &lt; 1.0 mg/L a tutti i rubinetti. Smaltire lontano da orti, corpi idrici e pozzi.</span></div>
+        <div class="pline"><span class="pnum">5</span><span>Confermare FRC ≥ 0.5 mg/L prima di rimettere in servizio.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="s-ph" class="ph">
+    <span class="ico">⚡</span>
+    <p>Inserisci i volumi e premi<br><strong>Calcola Dose d'Urto</strong></p>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     VIEW 3 — GUIDE
+══════════════════════════════════════════ -->
+<div id="v-guide" class="view">
+  <div class="sec-h">Guida Rapida</div>
+  <div class="sec-s">Annex C — WHO/MSF/Sphere · Estratto operativo</div>
+
+  <div class="card">
+    <div class="c-hdr">Classificazione torbidità — §2.2</div>
+    <div style="overflow-x:auto">
+    <table class="gtbl">
+      <thead><tr><th>Classe</th><th>NTU</th><th>TCF</th><th>CT</th><th>Pre-tratt.</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag tag-ok">Chiara</span></td><td>&lt;1</td><td>0.0</td><td>30′</td><td>No</td></tr>
+        <tr><td><span style="font-size:11px;font-weight:600;background:rgba(255,204,0,.15);color:#7A5C00;padding:2px 7px;border-radius:4px">Liev. torbida</span></td><td>1–5</td><td>0.2</td><td>30′</td><td>Raccomandata</td></tr>
+        <tr><td><span class="tag tag-wr">Torbida</span></td><td>5–20</td><td>0.5</td><td>60′</td><td>Obbligatoria</td></tr>
+        <tr><td><span class="tag tag-er">Molto torbida</span></td><td>20–50</td><td>1.0</td><td>60′</td><td>Obbligatoria</td></tr>
+        <tr><td><span class="tag tag-er">Altam. torbida</span></td><td>&gt;50</td><td colspan="3" style="color:var(--red);font-weight:600">❌ Clorazione INEFFICACE</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="card" style="padding:14px 16px">
+    <div class="c-hdr" style="padding:0 0 10px">Formule — §2.1 &amp; §3</div>
+    <div style="font-size:14px;line-height:1.8;color:var(--label)">
+      <span class="mono">C₀ = CD + TCF + FRC_target</span><br>
+      <span class="mono">Massa Cl₂ (g) = C₀ × V_total(L) ÷ 1000</span><br>
+      <span class="mono">Prodotto = Massa Cl₂ ÷ (%Cl / 100)</span><br>
+      <span style="font-size:12px;color:var(--label3);margin-top:4px;display:block">NaOCl: dividere per densità (1.10 g/mL 12% · 1.05 g/mL 5%) per ottenere mL. Fattore sicurezza ×1.1 consigliato.</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="c-hdr">Agenti cloranti — §3 &amp; §9</div>
+    <div style="overflow-x:auto">
+    <table class="gtbl">
+      <thead><tr><th>Prodotto</th><th>Cl%</th><th>Shelf-life</th><th>Note chiave</th></tr></thead>
+      <tbody>
+        <tr><td>NaOCl liq.</td><td>5–15%</td><td>3–6 mesi</td><td>Dens. 1.10 (12%). Degrada al sole.</td></tr>
+        <tr><td>Ca(OCl)₂</td><td>65–70%</td><td>1–2 anni</td><td>Ossidante forte. Pre-sciogliere SEMPRE.</td></tr>
+        <tr><td>NaDCC cp</td><td>~29–30%</td><td>3–5 anni</td><td>0.5 g o 2.5 g Cl₂/cp. Non frantumare.</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="c-hdr">Monitoraggio minimo — §6.1</div>
+    <table class="gtbl">
+      <thead><tr><th>Parametro</th><th>Freq.</th><th>Range OK</th><th>Metodo</th></tr></thead>
+      <tbody>
+        <tr><td>FRC</td><td>Dopo clor. + 2×/die</td><td>0.2–1.0 mg/L</td><td>DPD</td></tr>
+        <tr><td>Torbidità</td><td>Daily / dopo pioggia</td><td>&lt;5 NTU</td><td>Tubo/nefelom.</td></tr>
+        <tr><td>pH</td><td>Settimanale</td><td>6.5–8.5</td><td>Strisce/pH-m.</td></tr>
+        <tr><td>Livello serb.</td><td>Giornaliero</td><td>—</td><td>Dipstick calib.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="c-hdr">Troubleshooting — §8</div>
+    <div style="padding:12px 16px;font-size:13px;border-bottom:.5px solid var(--sep)">
+      <strong>FRC = 0 dopo dose corretta</strong>
+      <div style="color:var(--label3);margin-top:3px">Ri-testa CD con break-point test. Ispeziona condotte per bio-film. Ri-dosa.</div>
+    </div>
+    <div style="padding:12px 16px;font-size:13px;border-bottom:.5px solid var(--sep)">
+      <strong>FRC &gt; 1.0 mg/L ai rubinetti</strong>
+      <div style="color:var(--label3);margin-top:3px">Flussare 2–5 min. Ricalibrare CD per il prossimo ciclo.</div>
+    </div>
+    <div style="padding:12px 16px;font-size:13px;border-bottom:.5px solid var(--sep)">
+      <strong>Odore/sapore cloro forte</strong>
+      <div style="color:var(--label3);margin-top:3px">FRC &gt; 0.8 o pH alto → flussare brevemente, ridurre dose prossimo ciclo.</div>
+    </div>
+    <div style="padding:12px 16px;font-size:13px;border-bottom:.5px solid var(--sep)">
+      <strong>Torbidità torna dopo clorazione</strong>
+      <div style="color:var(--label3);margin-top:3px">Disturbanza sedimento / bio-film. Aumentare freq. pulizia fisica, pre-filtrazione.</div>
+    </div>
+    <div style="padding:12px 16px;font-size:13px">
+      <strong>Prodotto non si scioglie</strong>
+      <div style="color:var(--label3);margin-top:3px">Pre-sciogliere sempre. Colore giallo/marrone = degradato → sostituire.</div>
+    </div>
+  </div>
+
+  <div style="text-align:center;font-size:11px;color:var(--label3);padding:8px 0 20px">
+    Annex C — Chlorination Technical Sheet · WHO 4th ed. · MSF/Sphere
+  </div>
+</div>
+
+
+<!-- TAB BAR -->
+<nav class="tabbar">
+  <div class="tab on" id="tab-routine" onclick="goTab('routine',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+      <path d="M12 6v6l4 2"/>
+    </svg>
+    <span>Routinaria</span>
+  </div>
+  <div class="tab" id="tab-shock" onclick="goTab('shock',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+    </svg>
+    <span>Shock</span>
+  </div>
+  <div class="tab" id="tab-guide" onclick="goTab('guide',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+    </svg>
+    <span>Guida</span>
+  </div>
+</nav>
+
 <script>
-  let selectedChlorine = 'sodium';
+/* ══════════════════════════════════════════
+   ANNEX C — TURBIDITY TABLE §2.2
+══════════════════════════════════════════ */
+const TURB = [
+  { id:'clear',  label:'Chiara',              ntuMin:0,  ntuMax:1,
+    tcf:0.0, ct:30, clr:'#34C759', cls:'t-clear',
+    alert:null },
+  { id:'slight', label:'Leggermente torbida', ntuMin:1,  ntuMax:5,
+    tcf:0.2, ct:30, clr:'#FFCC00', cls:'t-slight',
+    alert:{type:'w', icon:'⚠️', msg:'Pre-trattamento raccomandato: sedimentazione prima della clorazione.'} },
+  { id:'turbid', label:'Torbida',             ntuMin:5,  ntuMax:20,
+    tcf:0.5, ct:60, clr:'#FF9500', cls:'t-turbid',
+    alert:{type:'w', icon:'⚠️', msg:'Pre-trattamento OBBLIGATORIO: sedimentare e/o filtrare prima della clorazione. CT esteso a 60 min.'} },
+  { id:'very',   label:'Molto torbida',       ntuMin:20, ntuMax:50,
+    tcf:1.0, ct:60, clr:'#FF3B30', cls:'t-very',
+    alert:{type:'d', icon:'🚫', msg:'Pre-trattamento OBBLIGATORIO. La dose elevata da sola non compensa i patogeni schermati dalla torbidità.'} },
+  { id:'high',   label:'Altamente torbida',   ntuMin:50, ntuMax:Infinity,
+    tcf:null, ct:null, clr:'#FF3B30', cls:'t-high',
+    alert:{type:'d', icon:'❌', msg:'Clorazione INEFFICACE oltre 50 NTU. Trattamento fisico obbligatorio: coagulazione → sedimentazione → filtrazione prima di qualsiasi clorazione.'} }
+];
 
-  function selectChlorine(t) {
-    document.querySelectorAll('.chlorine-opt').forEach(el => el.classList.remove('selected'));
-    document.getElementById('opt-'+t).classList.add('selected');
-    selectedChlorine = t;
-  }
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+let unitR = 'L';  // 'L' or 'm3'
+let unitS = 'L';
 
-  document.getElementById('ntu').addEventListener('input', function(){
-    const v = Math.min(parseFloat(this.value)||0, 100);
-    document.getElementById('ntuPointer').style.left = (v/100*100)+'%';
+/* ══════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════ */
+const $ = id => document.getElementById(id);
+const getTurb = ntu => TURB.find(t => ntu >= t.ntuMin && ntu < t.ntuMax) || TURB[TURB.length-1];
+
+function fmt(v, d=1){
+  if(v==null||isNaN(v)) return '—';
+  return parseFloat(v.toFixed(d)).toLocaleString('it-IT');
+}
+function fmtCeil(v){
+  if(v==null||isNaN(v)) return '—';
+  return Math.ceil(v).toLocaleString('it-IT');
+}
+
+/* Convert value in current unit → Litres for calculation */
+function toL(val, unit){ return unit==='m3' ? val * 1000 : val; }
+
+/* Get V_total in Litres from inputs (used in calc functions) */
+function getVtotalL(pfx){
+  const u = pfx==='r' ? unitR : unitS;
+  const t = parseFloat($(pfx+'-vtank').value) || 0;
+  const d = parseFloat($(pfx+'-vdist').value) || 0;
+  return toL(t + d, u);
+}
+
+/* ══════════════════════════════════════════
+   VTOTAL DISPLAY — updates label + value in current unit
+══════════════════════════════════════════ */
+function updateVT(pfx){
+  const u = pfx==='r' ? unitR : unitS;
+  const t = parseFloat($(pfx+'-vtank').value) || 0;
+  const d = parseFloat($(pfx+'-vdist').value) || 0;
+  const total = t + d;
+  $(pfx+'-vtotal').textContent = u==='m3'
+    ? parseFloat(total.toFixed(4)).toLocaleString('it-IT')
+    : Math.round(total).toLocaleString('it-IT');
+  $(pfx+'-vtu').textContent = u==='m3' ? 'm³' : 'L';
+}
+
+/* ══════════════════════════════════════════
+   UNIT SWITCH — L ↔ m³
+   Converts existing input values on toggle
+══════════════════════════════════════════ */
+function switchUnit(pfx, newUnit){
+  const prevUnit = pfx==='r' ? unitR : unitS;
+  if(prevUnit === newUnit) return;
+  if(pfx==='r') unitR = newUnit; else unitS = newUnit;
+
+  /* Convert input values */
+  ['vtank','vdist'].forEach(field => {
+    const el = $(pfx+'-'+field);
+    const val = parseFloat(el.value);
+    if(!isNaN(val)){
+      if(prevUnit==='L'  && newUnit==='m3') el.value = parseFloat((val / 1000).toFixed(4));
+      if(prevUnit==='m3' && newUnit==='L')  el.value = Math.round(val * 1000);
+    }
   });
 
-  function getChlorineDose(ntu){
-    if(ntu<1)  return {dose:0.5, label:"Clear water"};
-    if(ntu<5)  return {dose:1.0, label:"Low turbidity"};
-    if(ntu<10) return {dose:2.0, label:"Moderate turbidity"};
-    if(ntu<50) return {dose:3.0, label:"High turbidity"};
-    return {dose:5.0, label:"Very high turbidity"};
+  /* Update unit label spans next to inputs */
+  const uLabel = newUnit==='m3' ? 'm³' : 'L';
+  $(pfx+'-u1').textContent = uLabel;
+  $(pfx+'-u2').textContent = uLabel;
+
+  /* Update placeholders */
+  const ph = newUnit==='m3'
+    ? { tank:'10', dist:'1' }
+    : { tank:'10000', dist:'1000' };
+  $(pfx+'-vtank').placeholder = ph.tank;
+  $(pfx+'-vdist').placeholder = ph.dist;
+
+  /* Toggle button states */
+  $(pfx+'-ul').classList.toggle('on', newUnit==='L');
+  $(pfx+'-um').classList.toggle('on', newUnit==='m3');
+
+  updateVT(pfx);
+}
+
+/* ══════════════════════════════════════════
+   RESET
+══════════════════════════════════════════ */
+function resetRoutine(){
+  switchUnit('r','L');
+  $('r-vtank').value = '10000';
+  $('r-vdist').value = '1000';
+  $('r-turb').value  = '';
+  $('r-cd').value    = '2.0';
+  $('r-frc').value   = '0.5';
+  $('r-results').classList.add('hidden');
+  $('r-ph').classList.remove('hidden');
+  updateVT('r');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function resetShock(){
+  switchUnit('s','L');
+  $('s-vtank').value = '10000';
+  $('s-vdist').value = '1000';
+  $('s-results').classList.add('hidden');
+  $('s-ph').classList.remove('hidden');
+  updateVT('s');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ══════════════════════════════════════════
+   ROUTINE CALC — Annex C §2
+══════════════════════════════════════════ */
+function calcRoutine(){
+  const vTankRaw = parseFloat($('r-vtank').value);
+  const vDistRaw = parseFloat($('r-vdist').value) || 0;
+  const ntu  = parseFloat($('r-turb').value);
+  const cd   = parseFloat($('r-cd').value);
+  const frcT = parseFloat($('r-frc').value);
+
+  if(isNaN(vTankRaw)||vTankRaw<=0){ alert('⚠️ Inserisci un volume serbatoio valido.'); return; }
+  if(isNaN(ntu)||ntu<0)           { alert('⚠️ Inserisci la torbidità misurata (NTU).'); return; }
+  if(isNaN(cd)||cd<0)             { alert('⚠️ Inserisci la domanda di cloro CD (mg/L).'); return; }
+  if(isNaN(frcT)||frcT<0)         { alert('⚠️ Inserisci il target FRC (mg/L).'); return; }
+
+  /* Always work in Litres internally */
+  const vTotal = getVtotalL('r');
+  const T = getTurb(ntu);
+
+  $('r-ph').classList.add('hidden');
+  $('r-results').classList.remove('hidden');
+
+  /* turbidity badge */
+  $('r-tbadge').innerHTML =
+    `<div class="tbadge ${T.cls}">
+       <span class="tdot" style="background:${T.clr}"></span>
+       ${T.label} — ${ntu} NTU
+     </div>`;
+
+  /* alert */
+  $('r-talert').innerHTML = T.alert
+    ? `<div class="alrt alrt-${T.alert.type==='w'?'w':'d'}">
+         <span class="ai">${T.alert.icon}</span><span>${T.alert.msg}</span>
+       </div>` : '';
+
+  /* block if highly turbid */
+  if(T.id==='high'){
+    ['r-tcf','r-c0','r-mass','r-n12','r-n5','r-c65','r-c70','r-ns','r-nl'].forEach(id=>$(id).textContent='—');
+    $('r-n12s').textContent=''; $('r-c65s').textContent='';
+    $('r-ctcirc').style.background='#FF3B30';
+    $('r-ctnum').textContent='—';
+    $('r-cttitle').textContent='CT non applicabile';
+    $('r-ctdesc').textContent='Trattare fisicamente prima di qualsiasi clorazione.';
+    setTimeout(()=>$('r-results').scrollIntoView({behavior:'smooth',block:'start'}),80);
+    return;
   }
 
-  function calculate(){
-    const volRaw = parseFloat(document.getElementById('volume').value);
-    const unit   = document.getElementById('volumeUnit').value;
-    const ntu    = parseFloat(document.getElementById('ntu').value);
-    if(isNaN(volRaw)||volRaw<=0){alert("Please enter a valid tank volume.");return;}
-    if(isNaN(ntu)||ntu<0){alert("Please enter a valid turbidity value (NTU).");return;}
+  /* CT */
+  $('r-ctcirc').style.background = T.clr;
+  $('r-ctnum').textContent = T.ct;
+  $('r-cttitle').textContent = `Tempo di contatto: ≥ ${T.ct} min`;
+  $('r-ctdesc').textContent  = T.ct===60
+    ? 'Esteso a 60 min perché torbidità > 5 NTU. Attendere prima del consumo.'
+    : 'Acqua chiara: 30 minuti sufficienti. Verificare FRC al tap più distante.';
 
-    const volL = unit==='m3' ? volRaw*1000 : volRaw;
-    const {dose,label} = getChlorineDose(ntu);
-    const totalClG = (dose*volL)/1000;
+  /* ── FORMULE ANNEX C §2.1 ──
+     C₀ = CD + TCF + FRC_target
+     Massa Cl₂ (g) = C₀ × V_total(L) ÷ 1000
+  */
+  const tcf  = T.tcf;
+  const c0   = cd + tcf + frcT;
+  const mass = c0 * vTotal / 1000;
 
-    document.getElementById('warningCard').classList.remove('show');
-    document.getElementById('dangerCard').classList.remove('show');
-    if(ntu>=50){
-      document.getElementById('dangerCard').classList.add('show');
-      document.getElementById('dangerText').textContent=" Turbidity ≥ 50 NTU: chlorination alone is insufficient. Pre-treatment by settling and/or filtration is required before disinfection.";
-    } else if(ntu>=10){
-      document.getElementById('warningCard').classList.add('show');
-      document.getElementById('warningText').textContent=" Turbidity ≥ 10 NTU: pre-settling or coagulation is strongly recommended to improve chlorination effectiveness.";
-    }
+  $('r-tcf').textContent  = fmt(tcf,1);
+  $('r-c0').textContent   = fmt(c0,2);
+  $('r-mass').textContent = fmt(mass,1);
 
-    let rValue,rUnit,rSub,doseInfo;
+  /* ── AGENTI §3 ──
+     NaOCl 12%  (ρ=1.10 g/mL): vol_mL = (mass/0.12)/1.10
+     NaOCl  5%  (ρ=1.05 g/mL): vol_mL = (mass/0.05)/1.05
+     Ca(OCl)₂ 65%: mass/0.65  [+ ×1.1 safety]
+     Ca(OCl)₂ 70%: mass/0.70
+     NaDCC  0.5 g Cl₂/cp: ceil(mass/0.5)
+     NaDCC  2.5 g Cl₂/cp: ceil(mass/2.5)
+  */
+  const n12vol  = (mass / 0.12) / 1.10;
+  const n12safe = n12vol * 1.1;
+  const n5vol   = (mass / 0.05) / 1.05;
+  const c65     = mass / 0.65;
+  const c65safe = c65 * 1.1;
+  const c70     = mass / 0.70;
+  const nsm     = mass / 0.5;
+  const nlg     = mass / 2.5;
 
-    if(selectedChlorine==='sodium'){
-      const c=parseFloat(document.getElementById('conc-sodium').value);
-      const mL=totalClG/(c/100);
-      rValue=mL<1000?mL.toFixed(1):(mL/1000).toFixed(2);
-      rUnit =mL<1000?"mL of Sodium Hypochlorite":"L of Sodium Hypochlorite";
-      rSub  =`${c}% NaOCl · Dose: ${dose} mg/L Cl₂ · ${label}`;
-      doseInfo=`ℹ️ Corresponds to ${totalClG.toFixed(2)} g of pure Cl₂ for ${volL.toLocaleString()} L. Add slowly, stir well, wait 30 min before use.`;
-    } else if(selectedChlorine==='calcium'){
-      const c=parseFloat(document.getElementById('conc-calcium').value);
-      const g=totalClG/(c/100);
-      rValue=g<1000?g.toFixed(2):(g/1000).toFixed(3);
-      rUnit =g<1000?"g of Calcium Hypochlorite":"kg of Calcium Hypochlorite";
-      rSub  =`Ca(ClO)₂ ${c}% · Dose: ${dose} mg/L Cl₂ · ${label}`;
-      doseInfo=`ℹ️ Dissolve in a small amount of water before adding to tank. Stir and wait 30 min. Pure Cl₂: ${totalClG.toFixed(2)} g.`;
-    } else if(selectedChlorine==='tablet'){
-      const c=parseFloat(document.getElementById('conc-tablet').value);
-      const g=totalClG/(c/100);
-      let tabInfo="";
-      [0.5,1.0,3.3,8.5].forEach(s=>{ tabInfo+=`${Math.ceil(g/s)}×${s}g  `; });
-      rValue=g.toFixed(2); rUnit="g of Chlorine Tablets";
-      rSub  =`${c}% available Cl₂ · Dose: ${dose} mg/L · ${label}`;
-      doseInfo=`ℹ️ Tablet options: ${tabInfo.trim()}. Allow full dissolution before distributing water.`;
-    } else {
-      rValue=totalClG.toFixed(2); rUnit="g of Chlorine Gas (Cl₂)";
-      rSub  =`100% Cl₂ · Dose: ${dose} mg/L · ${label}`;
-      doseInfo=`⚠️ Chlorine gas requires specialised equipment and trained personnel. Always follow safety protocols (PPE, ventilation, gas detection).`;
-    }
+  $('r-n12').textContent  = fmtCeil(n12vol);
+  $('r-n12s').textContent = `(+10% sicurezza: ${fmtCeil(n12safe)} mL)`;
+  $('r-n5').textContent   = fmtCeil(n5vol);
+  $('r-c65').textContent  = fmt(c65,1);
+  $('r-c65s').textContent = `(+10%: ${fmt(c65safe,1)} g)`;
+  $('r-c70').textContent  = fmt(c70,1);
+  $('r-ns').textContent   = fmtCeil(nsm);
+  $('r-nl').textContent   = fmtCeil(nlg);
 
-    document.getElementById('rValue').textContent=rValue;
-    document.getElementById('rUnit').textContent=rUnit;
-    document.getElementById('rSub').textContent=rSub;
-    document.getElementById('doseInfo').textContent=doseInfo;
-    document.getElementById('results').classList.add('show');
-    document.getElementById('results').scrollIntoView({behavior:'smooth'});
-  }
+  setTimeout(()=>$('r-results').scrollIntoView({behavior:'smooth',block:'start'}),80);
+}
 
-  function reset(){
-    document.getElementById('volume').value='';
-    document.getElementById('ntu').value='';
-    document.getElementById('ntuPointer').style.left='0%';
-    document.getElementById('results').classList.remove('show');
-    document.getElementById('warningCard').classList.remove('show');
-    document.getElementById('dangerCard').classList.remove('show');
-    window.scrollTo({top:0,behavior:'smooth'});
-  }
+/* ══════════════════════════════════════════
+   SHOCK CALC — Annex C §5
+   C₀ = 50 mg/L fixed, no TCF
+   Mass Cl₂ = 50 × V_total(L) / 1000
+══════════════════════════════════════════ */
+function calcShock(){
+  const vTankRaw = parseFloat($('s-vtank').value);
+  if(isNaN(vTankRaw)||vTankRaw<=0){ alert('⚠️ Inserisci un volume serbatoio valido.'); return; }
+
+  const vTotal = getVtotalL('s');
+  const mass   = 50 * vTotal / 1000;
+
+  $('s-ph').classList.add('hidden');
+  $('s-results').classList.remove('hidden');
+
+  $('s-mass').textContent = fmt(mass,1);
+
+  const n12vol = (mass / 0.12) / 1.10;
+  const c65    = mass / 0.65;
+  const nsm    = mass / 0.5;
+
+  $('s-n12').textContent = fmtCeil(n12vol);
+  $('s-n12l').textContent = fmt(n12vol / 1000, 2);
+  $('s-c65').textContent  = fmt(c65,1);
+  $('s-ns').textContent   = fmtCeil(nsm);
+
+  setTimeout(()=>$('s-results').scrollIntoView({behavior:'smooth',block:'start'}),80);
+}
+
+/* ══════════════════════════════════════════
+   LIVE V_TOTAL UPDATE
+══════════════════════════════════════════ */
+$('r-vtank').addEventListener('input',()=>updateVT('r'));
+$('r-vdist').addEventListener('input',()=>updateVT('r'));
+$('s-vtank').addEventListener('input',()=>updateVT('s'));
+$('s-vdist').addEventListener('input',()=>updateVT('s'));
+
+/* ══════════════════════════════════════════
+   TAB NAVIGATION
+══════════════════════════════════════════ */
+function goTab(name, el){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  $('v-'+name).classList.add('active');
+  el.classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ══════════════════════════════════════════
+   SERVICE WORKER (offline via blob)
+══════════════════════════════════════════ */
+if('serviceWorker' in navigator){
+  const sw=`const C='chlorcalc-v1';
+self.addEventListener('install',e=>{self.skipWaiting()});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))))});
+self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{
+  if(resp&&resp.status===200){const cl=resp.clone();caches.open(C).then(c=>c.put(e.request,cl))}
+  return resp;
+})))});`;
+  try{
+    const b=new Blob([sw],{type:'application/javascript'});
+    navigator.serviceWorker.register(URL.createObjectURL(b)).catch(()=>{});
+  }catch(e){}
+}
 </script>
 </body>
 </html>
